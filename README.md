@@ -11,3 +11,15 @@ The large lattice size and the number of Monte Carlo steps should ensure that th
 <img src="single-gpu-a100-vs-p100.png" width="500" alt="Description of the image">
 </center>
 
+### First time Julia
+To run the code, first time Julia users will need to install some packages including CUDA. 
+In a terminal session on Mahuika
+```
+module load Julia
+# start and interactive julia session
+julia
+julia> import Pkg; Pkg.add("CUDA")
+...........
+julia> exit()
+```
+
