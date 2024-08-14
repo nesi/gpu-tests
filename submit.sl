@@ -13,5 +13,5 @@ module purge >/dev/null 2>&1
 module load Julia
 module load CUDA/11.8.0
 
-julia ./singlegpu-lattice.jl
-#julia ./multigpu-lattice.jl
+julia ./julia-scripts/singlegpu-lattice.jl
+#julia ./julia-scripts/multigpu-lattice.jl
