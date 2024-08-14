@@ -8,4 +8,6 @@
 The large lattice size and the number of Monte Carlo steps should ensure that this simulation runs for at least 5 minutes on an A100 GPU
 
 <br>
-<center><img src="single-gpu-a100-vs-p100.png" width="500" alt="Description of the image"></center>
+<div style="text-align: center;">
+<img src="single-gpu-a100-vs-p100.png" width="500" alt="Description of the image">
+</div>
