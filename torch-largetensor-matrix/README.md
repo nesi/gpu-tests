@@ -22,6 +22,7 @@
 1. Multi-GPU Support:
     - The script now uses Python's `multiprocessing` module to create a separate process for each GPU.
     - Each process runs the `gpu_worker` function, which performs computations on a specific GPU.
+    - Make sure you have the specified number of GPUs available (default is 4, but you can change the `num_gpus` parameter in the main function)
 
 2. GPU Selection:
     - Each worker process is assigned to a specific GPU using `torch.device(f'cuda:{gpu_id}')`.

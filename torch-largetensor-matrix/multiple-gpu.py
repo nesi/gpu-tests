@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import torch
 import time
 import os
@@ -9,11 +11,15 @@ def create_large_tensor(size_gb, device):
     return torch.rand(num_elements, device=device)
 
 def perform_computations(tensor, iterations):
+    chunk_size = 1000000  # Adjust this value if needed
     for _ in range(iterations):
-        # Perform some heavy computations
-        tensor = torch.matmul(tensor.view(1, -1), tensor.view(-1, 1))
-        tensor = torch.sin(tensor)
-        tensor = torch.exp(tensor)
+        # Process the tensor in chunks
+        for i in range(0, tensor.size(0), chunk_size):
+            chunk = tensor[i:i+chunk_size]
+            # Perform computations on the chunk
+            chunk = torch.sin(chunk)
+            chunk = torch.exp(chunk)
+            tensor[i:i+chunk_size] = chunk
     return tensor
 
 def io_operations(file_size_gb, num_operations):
@@ -47,7 +53,7 @@ def gpu_worker(gpu_id, run_time_minutes, gpu_memory_usage_gb, io_file_size_gb, i
     
     while time.time() - start_time < run_time_minutes * 60:
         # Perform GPU computations
-        large_tensor = perform_computations(large_tensor, 100)
+        large_tensor = perform_computations(large_tensor, 10)
         
         # Perform I/O operations every 10 iterations
         if iteration % 10 == 0:
