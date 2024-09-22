@@ -99,3 +99,21 @@ NIC Legend:
   NIC0: mlx5_0
 
 ```
+### `gpuwarmup_nvlink_test_with_topo.py`
+
+
+
+1. `warm_up_gpus` function:
+
+    - This function performs small transfers between all GPU pairs before the actual test.
+    - It uses a small tensor (1024 elements) to quickly initialize CUDA contexts and warm up the connections.
+
+
+2. Modified the main function:
+
+    - Added a call to `warm_up_gpus(gpu_order)` after shuffling the GPU order but before starting the actual tests.
+
+
+3. Kept the shuffling mechanism:
+
+    - This ensures that we still get a randomized order of GPU testing, which helps verify that the issue isn't tied to a specific GPU
