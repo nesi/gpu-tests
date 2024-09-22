@@ -56,3 +56,46 @@ Some important notes:
 **Recommendation**
 
 For a more comprehensive test, you might want to run this multiple times and average the results, as there can be some variation in transfer speeds.
+
+
+### `nvlink_test_with_topo.py`
+
+1. `run_nvidia_smi_topo` function
+    - This function runs `nvidia-smi topo -m` at regular intervals (default is every 60 seconds).
+    -  The output is timestamped and appended to a log file, *nvidia_smi_topo_log.txt*
+
+
+2. Threading:
+    - We use a separate thread to run the `nvidia-smi topo -m` command periodically.
+    - This allows the topology logging to occur concurrently with the NVLink transfer tests.
+
+
+3. Cleanup: try/finally block to ensure that the topology logging thread is properly stopped, even if an error occurs during the NVLink tests.
+
+
+**Sample Output**
+
+```bash
+--- Topology at 2024-09-23 09:34:37 ---
+	GPU0	GPU1	GPU2	GPU3	NIC0	CPU Affinity	NUMA Affinity
+GPU0	 X 	NV4	NV4	NV4	SYS	0,64	0-3
+GPU1	NV4	 X 	NV4	NV4	SYS	0,64	0-3
+GPU2	NV4	NV4	 X 	NV4	SYS	0,64	0-3
+GPU3	NV4	NV4	NV4	 X 	PHB	0,64	0-3
+NIC0	SYS	SYS	SYS	PHB	 X 		
+
+Legend:
+
+  X    = Self
+  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)
+  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node
+  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)
+  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)
+  PIX  = Connection traversing at most a single PCIe bridge
+  NV#  = Connection traversing a bonded set of # NVLinks
+
+NIC Legend:
+
+  NIC0: mlx5_0
+
+```
