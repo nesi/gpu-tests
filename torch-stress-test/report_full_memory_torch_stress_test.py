@@ -98,7 +98,7 @@ def main(gpus):
     print(f"Report saved to {report_file}")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Advanced GPU Hardware Acceptance Test")
+    parser = argparse.ArgumentParser(description="GPU Hardware Acceptance Test")
     parser.add_argument("--gpu", type=int, nargs='*', help="GPU indices to test (default: all GPUs)")
     args = parser.parse_args()
 
