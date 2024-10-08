@@ -15,3 +15,13 @@ On top of the following changes to utilise more GPU memory during the test, this
 2. use `torch.float64` (64-bit floating point) to increase memory usage and computational intensity.
 3. reports the total memory of the GPU being tested.
 4. `torch.cuda.synchronize(device)` to ensure each operation completes before moving to the next iteration.
+
+
+## `report_full_memory_torch_stress_test.py`
+
+This updated script incorporates all the requested features:
+
+1. `Multi-GPU Support`: If no `--gpu` argument is provided, it tests all available GPUs.
+2. `nvidia-smi` Integration: The script uses nvidia-smi to gather memory utilization and temperature data.
+3. Report Generation: It creates a text file named after the hostname (e.g., hostname.txt) with a report for each GPU tested.
+4. `PASS/FAIL` Criteria: The test is considered a PASS if memory utilization exceeds 85% and the peak temperature stays below 85°C. You can adjust these thresholds as needed.
