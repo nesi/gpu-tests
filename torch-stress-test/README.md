@@ -24,4 +24,6 @@ This updated script incorporates all the requested features:
 1. `Multi-GPU Support`: If no `--gpu` argument is provided, it tests all available GPUs.
 2. `nvidia-smi` Integration: The script uses nvidia-smi to gather memory utilization and temperature data.
 3. Report Generation: It creates a text file named after the hostname (e.g., hostname.txt) with a report for each GPU tested.
-4. `PASS/FAIL` Criteria: The test is considered a PASS if memory utilization exceeds 85% and the peak temperature stays below 85°C. You can adjust these thresholds as needed.
+4. `PASS/FAIL` Criteria:
+  - `PASS`: Memory utilization > 85% AND peak temperature < 85°C AND no CUDA errors
+  - `FAIL`: Memory utilization ≤ 85% OR peak temperature ≥ 85°C OR any CUDA error occurred

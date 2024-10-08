@@ -24,28 +24,34 @@ def gpu_stress_test(device, duration=180):
     
     print(f"Creating tensors of size {tensor_size}x{tensor_size}")
     
-    a = torch.randn(tensor_size, tensor_size, dtype=torch.float64, device=device)
-    b = torch.randn(tensor_size, tensor_size, dtype=torch.float64, device=device)
+    try:
+        a = torch.randn(tensor_size, tensor_size, dtype=torch.float64, device=device)
+        b = torch.randn(tensor_size, tensor_size, dtype=torch.float64, device=device)
+    except torch.cuda.OutOfMemoryError:
+        return None, None, "CUDA out of memory error during tensor creation"
     
     peak_memory_usage = 0
     peak_temperature = 0
     
     while time.time() - start_time < duration:
-        c = torch.matmul(a, b)
-        d = torch.sin(c) + torch.cos(c)
-        result = torch.sum(d)
-        
-        elapsed = time.time() - start_time
-        print(f"Elapsed time: {elapsed:.2f} seconds, Result: {result.item()}")
-        
-        torch.cuda.synchronize(device)
-        
-        _, used_memory, temperature = get_gpu_info(device.index)
-        peak_memory_usage = max(peak_memory_usage, used_memory)
-        peak_temperature = max(peak_temperature, temperature)
+        try:
+            c = torch.matmul(a, b)
+            d = torch.sin(c) + torch.cos(c)
+            result = torch.sum(d)
+            
+            elapsed = time.time() - start_time
+            print(f"Elapsed time: {elapsed:.2f} seconds, Result: {result.item()}")
+            
+            torch.cuda.synchronize(device)
+            
+            _, used_memory, temperature = get_gpu_info(device.index)
+            peak_memory_usage = max(peak_memory_usage, used_memory)
+            peak_temperature = max(peak_temperature, temperature)
+        except torch.cuda.CUDAError as e:
+            return peak_memory_usage, peak_temperature, f"CUDA error during computation: {str(e)}"
     
     print(f"Test completed on {device}")
-    return peak_memory_usage, peak_temperature
+    return peak_memory_usage, peak_temperature, None
 
 def main(gpus):
     hostname = socket.gethostname()
@@ -63,19 +69,27 @@ def main(gpus):
         print(f"Testing GPU {gpu_index}: {gpu_name} (Total memory: {total_memory} MB)")
         
         try:
-            peak_memory_usage, peak_temperature = gpu_stress_test(device)
-            memory_utilization = (peak_memory_usage / total_memory) * 100
-            status = "PASS" if memory_utilization > 85 and peak_temperature < 85 else "FAIL"
+            peak_memory_usage, peak_temperature, cuda_error = gpu_stress_test(device)
             
-            report.append(f"GPU {gpu_index}: {gpu_name}")
-            report.append(f"Status: {status}")
-            report.append(f"Peak Memory Utilization: {memory_utilization:.2f}%")
-            report.append(f"Peak Temperature: {peak_temperature}°C")
+            if cuda_error:
+                status = "FAIL"
+                report.append(f"GPU {gpu_index}: {gpu_name}")
+                report.append(f"Status: {status}")
+                report.append(f"Error: {cuda_error}")
+            else:
+                memory_utilization = (peak_memory_usage / total_memory) * 100
+                status = "PASS" if memory_utilization > 85 and peak_temperature < 85 else "FAIL"
+                
+                report.append(f"GPU {gpu_index}: {gpu_name}")
+                report.append(f"Status: {status}")
+                report.append(f"Peak Memory Utilization: {memory_utilization:.2f}%")
+                report.append(f"Peak Temperature: {peak_temperature}°C")
+            
             report.append("")
         except Exception as e:
             report.append(f"GPU {gpu_index}: {gpu_name}")
             report.append(f"Status: FAIL")
-            report.append(f"Error: {str(e)}")
+            report.append(f"Error: Unexpected error - {str(e)}")
             report.append("")
 
     with open(report_file, 'w') as f:
