@@ -9,3 +9,9 @@ The test will run on all available GPUs sequentially
 
 ## `full_memory_torch_stress_test.py`
 
+On top of the following changes to utilise more GPU memory during the test, this allows us to choose the GPU of interest ( 0 , 1, etc) as it can be executed with `python full_memory_torch_stress_test.py --gpu 0`   ,etc. 
+
+1. Calculate the maximum tensor size that will fit in GPU memory, using about 90% of the available memory. This leaves some headroom to avoid out-of-memory errors.
+2. use `torch.float64` (64-bit floating point) to increase memory usage and computational intensity.
+3. reports the total memory of the GPU being tested.
+4. `torch.cuda.synchronize(device)` to ensure each operation completes before moving to the next iteration.
