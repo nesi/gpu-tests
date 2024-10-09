@@ -57,3 +57,14 @@ Here's why this value is used in the test:
 *  **Forcing Computation**: By performing these calculations and using the result, we ensure that the GPU actually computes something and doesn't optimize away our operations.
 * **Consistency Check**: If the GPU is functioning correctly, this value should be consistent across iterations (as you can see in your output where the value is the same for both lines).
 * **Preventing Optimizations** : Summing to a single value and printing it prevents the compiler from optimizing away the entire computation as unused.
+
+
+## `gpu_performance_benchmark.py`
+
+* Run for about 10 minutes per GPU.
+* Perform matrix multiplications and trigonometric operations to stress the GPU.
+* Calculate and report the average FLOPS achieved during the test.
+* Monitor and report peak memory usage and temperature.
+* Generate a report file named `hostname_performance.txt` with results for each GPU.
+
+The PASS/FAIL criteria remain the same as before, with the addition that a NULL FLOPS value will also result in a FAIL status.
