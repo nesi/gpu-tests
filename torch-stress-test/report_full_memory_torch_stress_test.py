@@ -78,7 +78,7 @@ def main(gpus):
                 report.append(f"Error: {cuda_error}")
             else:
                 memory_utilization = (peak_memory_usage / total_memory) * 100
-                status = "PASS" if memory_utilization > 70 and peak_temperature < 85 else "FAIL"
+                status = "PASS" if memory_utilization > 75 and peak_temperature < 85 else "FAIL"
                 
                 report.append(f"GPU {gpu_index}: {gpu_name}")
                 report.append(f"Status: {status}")
