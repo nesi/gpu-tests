@@ -1,0 +1,7 @@
+GPU 0: NVIDIA L4
+Status: FAIL
+Error: CUDA out of memory error during tensor creation
+
+GPU 1: NVIDIA L4
+Status: FAIL
+Error: CUDA out of memory error during tensor creation

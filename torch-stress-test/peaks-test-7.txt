@@ -1,0 +1,9 @@
+GPU 0: NVIDIA L4
+Status: PASS
+Peak Memory Utilization: 77.99%
+Peak Temperature: 67°C
+
+GPU 1: NVIDIA L4
+Status: PASS
+Peak Memory Utilization: 77.99%
+Peak Temperature: 59°C
