@@ -18,20 +18,40 @@ def gpu_benchmark(device, duration=600):  # 10 minutes
     print(f"Starting GPU benchmark on {device}")
     start_time = time.time()
     
+    # Get available GPU memory
     total_memory = torch.cuda.get_device_properties(device).total_memory
-    tensor_size = int((total_memory * 0.9 * 1024**2 / 4) ** 0.5)  # Using 90% of memory, adjusted for FP32
+    _, used_memory_before, _ = get_gpu_info(device.index)
     
-    print(f"Creating tensors of size {tensor_size}x{tensor_size}")
+    # FIXED: Proper tensor size calculation for FP32
+    # Start with a conservative fixed size and adjust if needed
+    tensor_size = 8000  # This should work on most L4 GPUs (24GB)
     
-    # Enable TF32 for Tensor Core utilization
+    # Enable TF32 for Tensor Core utilization on Ampere and newer GPUs
     torch.backends.cuda.matmul.allow_tf32 = True
     torch.backends.cudnn.allow_tf32 = True
+    
+    print(f"Creating tensors of size {tensor_size}x{tensor_size}")
     
     try:
         a = torch.randn(tensor_size, tensor_size, dtype=torch.float32, device=device)
         b = torch.randn(tensor_size, tensor_size, dtype=torch.float32, device=device)
     except torch.cuda.OutOfMemoryError:
-        return None, None, None, "CUDA out of memory error during tensor creation"
+        # If we can't allocate with the initial size, try with a smaller size
+        print("Out of memory with initial tensor size, reducing...")
+        tensor_size = 6000
+        print(f"Trying with reduced tensor size: {tensor_size}x{tensor_size}")
+        try:
+            a = torch.randn(tensor_size, tensor_size, dtype=torch.float32, device=device)
+            b = torch.randn(tensor_size, tensor_size, dtype=torch.float32, device=device)
+        except torch.cuda.OutOfMemoryError:
+            # If still OOM, try one more time with an even smaller size
+            tensor_size = 4000
+            print(f"Trying with further reduced tensor size: {tensor_size}x{tensor_size}")
+            try:
+                a = torch.randn(tensor_size, tensor_size, dtype=torch.float32, device=device)
+                b = torch.randn(tensor_size, tensor_size, dtype=torch.float32, device=device)
+            except torch.cuda.OutOfMemoryError:
+                return None, None, None, "CUDA out of memory error during tensor creation"
     
     peak_memory_usage = 0
     peak_temperature = 0
@@ -79,7 +99,7 @@ def gpu_benchmark(device, duration=600):  # 10 minutes
 
 def main(gpus):
     hostname = socket.gethostname()
-    report_file = f"{hostname}_performance.txt"
+    report_file = f"{hostname}_performance_fp32.txt"
     report = []
 
     for gpu_index in gpus:
@@ -102,6 +122,7 @@ def main(gpus):
                 report.append(f"Error: {error}")
             else:
                 memory_utilization = (peak_memory_usage / total_memory) * 100
+                # L4 specific pass criteria
                 status = "PASS" if (
                     memory_utilization > 70 and 
                     peak_temperature < 80 and 
@@ -127,8 +148,9 @@ def main(gpus):
     print(f"Report saved to {report_file}")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="GPU Performance Benchmark")
+    parser = argparse.ArgumentParser(description="GPU Performance Benchmark for FP32 (optimized for NVIDIA L4)")
     parser.add_argument("--gpu", type=int, nargs='*', help="GPU indices to test (default: all GPUs)")
+    parser.add_argument("--duration", type=int, default=600, help="Duration of the benchmark in seconds (default: 600)")
     args = parser.parse_args()
 
     if torch.cuda.is_available():
